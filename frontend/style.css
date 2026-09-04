@@ -1,11 +1,77 @@
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin-top: 100px;
+* {
+    box-sizing: border-box;
 }
 
-button {
-    padding: 12px 24px;
-    font-size: 16px;
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 650px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    margin-bottom: 10px;
+    font-size: 40px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+#startButton {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    background: #111827;
+    color: white;
+    font-size: 18px;
     cursor: pointer;
+}
+
+#startButton:hover {
+    opacity: 0.85;
+}
+
+#status {
+    margin-top: 25px;
+    padding: 15px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #334155;
+    min-height: 50px;
+}
+#conversation {
+    margin-top: 25px;
+    text-align: left;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.message {
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    line-height: 1.4;
+}
+
+.user-message {
+    background: #eef2ff;
+}
+
+.bot-message {
+    background: #f1f5f9;
 }

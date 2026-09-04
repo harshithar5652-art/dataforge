@@ -1,5 +1,6 @@
 const button = document.getElementById("startButton");
 const status = document.getElementById("status");
+const conversation = document.getElementById("conversation");
 const sessionId = crypto.randomUUID();
 let currentAudio= null;
 
@@ -28,6 +29,13 @@ if (!SpeechRecognition) {
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
+
+        // Display user message
+        const userMessage = document.createElement("div");
+        userMessage.className = "message user-message";
+        userMessage.textContent = `You: ${transcript}`;
+        conversation.appendChild(userMessage);
+        conversation.scrollTop=conversation.scrollHeight;
 
         status.textContent = `You said: "${transcript}"`;
 
