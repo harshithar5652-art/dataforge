@@ -75,3 +75,8 @@ h1 {
 .bot-message {
     background: #f1f5f9;
 }
+#voiceState {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #475569;
+}

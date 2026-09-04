@@ -1,6 +1,7 @@
 const button = document.getElementById("startButton");
 const status = document.getElementById("status");
 const conversation = document.getElementById("conversation");
+const voiceState = document.getElementById("voiceState");
 
 const sessionId =
     (window.crypto && crypto.randomUUID)
@@ -31,6 +32,8 @@ if (!SpeechRecognition) {
         }
 
         status.textContent = "🎙️ Listening... Speak now!";
+        voiceState.textContent = "🔴 Listening";
+button.textContent = "🔴 Listening...";
 
         recognition.start();
     });
@@ -129,6 +132,13 @@ if (!SpeechRecognition) {
 
             status.textContent =
                 "🔊 VoiceFlow is speaking...";
+                voiceState.textContent = "🔊 Speaking";
+button.textContent = "🔊 Speaking...";
+currentAudio.onended = () => {
+    voiceState.textContent = "Ready";
+    button.textContent = "🎤 Start Voice Assistant";
+    status.textContent = "Click the button and start speaking.";
+};
         })
         .catch(error => {
 
