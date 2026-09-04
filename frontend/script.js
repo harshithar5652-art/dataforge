@@ -23,12 +23,29 @@ if (!SpeechRecognition) {
 
         status.textContent = `You said: "${transcript}"`;
 
-        fetch("http://127.0.0.1:8000/voice?text=" + encodeURIComponent(transcript), {
-    method: "POST"
+        fetch("http://127.0.0.1:8000/voice", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        text: transcript
+    })
 })
-.then(response => response.json())
-.then(data => {
-    status.textContent = `VoiceFlow: ${data.response}`;
+.then(response => {
+    if (!response.ok) {
+        throw new Error("Backend error");
+    }
+
+    return response.blob();
+})
+.then(audioBlob => {
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+
+    audio.play();
+
+    status.textContent = "🔊 VoiceFlow is speaking...";
 })
 .catch(error => {
     console.error(error);
