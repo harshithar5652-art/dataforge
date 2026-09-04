@@ -1,3 +1,4 @@
+import base64
 import os
 import requests
 from fastapi.responses import Response
@@ -113,12 +114,11 @@ def generate_response(text, session_id):
 @app.post("/voice")
 def process_voice(request: VoiceRequest):
     text = request.text
-    response = generate_response(text,request.session_id)
+    response = generate_response(text, request.session_id)
 
     audio = text_to_speech(response)
 
-    return Response(
-        content=audio,
-        media_type="audio/mpeg"
-    )
-    
+    return {
+        "response": response,
+        "audio": base64.b64encode(audio).decode("utf-8")
+    }

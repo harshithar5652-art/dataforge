@@ -1,14 +1,20 @@
 const button = document.getElementById("startButton");
 const status = document.getElementById("status");
 const conversation = document.getElementById("conversation");
-const sessionId = crypto.randomUUID();
-let currentAudio= null;
+
+const sessionId =
+    (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : "session-" + Date.now();
+
+let currentAudio = null;
 
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (!SpeechRecognition) {
-    status.textContent = "Voice recognition is not supported in this browser.";
+    status.textContent =
+        "Voice recognition is not supported in this browser.";
 } else {
     const recognition = new SpeechRecognition();
 
@@ -17,71 +23,132 @@ if (!SpeechRecognition) {
     recognition.lang = "en-IN";
 
     button.addEventListener("click", () => {
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-    }
 
-    status.textContent = "🎙️ Listening... Speak now!";
-    recognition.start();
-});
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+        }
+
+        status.textContent = "🎙️ Listening... Speak now!";
+
+        recognition.start();
+    });
+
+    recognition.onspeechstart = () => {
+
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+
+            status.textContent =
+                "🛑 VoiceFlow interrupted. Listening...";
+        }
+    };
 
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
 
-        // Display user message
-        const userMessage = document.createElement("div");
-        userMessage.className = "message user-message";
-        userMessage.textContent = `You: ${transcript}`;
+        const transcript =
+            event.results[0][0].transcript;
+
+        // Show user's message
+        const userMessage =
+            document.createElement("div");
+
+        userMessage.className =
+            "message user-message";
+
+        userMessage.textContent =
+            `You: ${transcript}`;
+
         conversation.appendChild(userMessage);
-        conversation.scrollTop=conversation.scrollHeight;
 
-        status.textContent = `You said: "${transcript}"`;
+        conversation.scrollTop =
+            conversation.scrollHeight;
 
+        status.textContent =
+            `You said: "${transcript}"`;
+
+        // Send request to backend
         fetch("http://127.0.0.1:8000/voice", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-    text: transcript,
-    session_id: sessionId
-})
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error("Backend error");
-    }
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                text: transcript,
+                session_id: sessionId
+            })
+        })
+        .then(response => {
 
-    return response.blob();
-})
-.then(audioBlob => {
-    const audioUrl = URL.createObjectURL(audioBlob);
-    currentAudio = new Audio(audioUrl);
+            if (!response.ok) {
+                throw new Error("Backend error");
+            }
 
-currentAudio.play();
+            return response.json();
+        })
+        .then(data => {
 
-status.textContent = "🔊 VoiceFlow is speaking...";
-})
-.catch(error => {
-    console.error(error);
-    status.textContent = "Could not connect to the backend.";
-});
+            // Show VoiceFlow's response
+            const botMessage =
+                document.createElement("div");
+
+            botMessage.className =
+                "message bot-message";
+
+            botMessage.textContent =
+                `VoiceFlow: ${data.response}`;
+
+            conversation.appendChild(botMessage);
+
+            conversation.scrollTop =
+                conversation.scrollHeight;
+
+            // Convert base64 audio to MP3
+            const audioBytes =
+                Uint8Array.from(
+                    atob(data.audio),
+                    c => c.charCodeAt(0)
+                );
+
+            const audioBlob =
+                new Blob(
+                    [audioBytes],
+                    { type: "audio/mpeg" }
+                );
+
+            const audioUrl =
+                URL.createObjectURL(audioBlob);
+
+            currentAudio =
+                new Audio(audioUrl);
+
+            currentAudio.play();
+
+            status.textContent =
+                "🔊 VoiceFlow is speaking...";
+        })
+        .catch(error => {
+
+            console.error(error);
+
+            status.textContent =
+                "Could not connect to VoiceFlow.";
+        });
     };
-    recognition.onspeechstart = () => {
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-        status.textContent = "🛑 VoiceFlow interrupted. Listening...";
-    }
-};
+
     recognition.onerror = (event) => {
-        status.textContent = `Voice error: ${event.error}`;
+
+        status.textContent =
+            `Voice error: ${event.error}`;
     };
 
     recognition.onend = () => {
-        console.log("Voice recognition ended.");
+
+        console.log(
+            "Voice recognition ended."
+        );
     };
 }
