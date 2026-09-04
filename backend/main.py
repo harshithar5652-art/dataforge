@@ -1,3 +1,4 @@
+import json
 import base64
 import os
 import requests
@@ -9,6 +10,8 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 load_dotenv()
+with open("data/campus.json", "r") as file:
+    campus_data = json.load(file)
 
 app = FastAPI(title="VoiceFlow API")
 
@@ -96,14 +99,29 @@ def generate_response(text, session_id):
         response = "VoiceFlow is our voice assistant project for the DataForge Hackathon."
 
     elif "library" in text_lower:
-        previous_messages = " ".join(
-            item["user"] for item in history[:-1]
-        ).lower()
+        library = campus_data["library"]
 
-        if "college" in previous_messages:
-            response = "The library is part of the college context you mentioned. I can help you with library-related information."
-        else:
-            response = "Sure, I can help with library-related information."
+        response = (
+            f"{library['name']} is located in the "
+            f"{library['location']}. "
+            f"Its hours are {library['hours']}."
+    )
+    elif "canteen" in text_lower:
+        canteen = campus_data["canteen"]
+
+        response = (
+            f"{canteen['name']} is located in the "
+            f"{canteen['location']}. "
+            f"Its hours are {canteen['hours']}."
+    )
+    elif "office" in text_lower:
+        office = campus_data["office"]
+
+        response = (
+            f"{office['name']} is located in the "
+            f"{office['location']}. "
+            f"Its hours are {office['hours']}."
+        )
 
     else:
         response = f"I understood your request: {text}"

@@ -1,0 +1,17 @@
+{
+    "library": {
+        "name": "College Library",
+        "location": "Main Academic Block",
+        "hours": "9 AM to 6 PM"
+    },
+    "canteen": {
+        "name": "College Canteen",
+        "location": "Near the Main Block",
+        "hours": "8 AM to 7 PM"
+    },
+    "office": {
+        "name": "College Administrative Office",
+        "location": "Main Administrative Block",
+        "hours": "10 AM to 5 PM"
+    }
+}

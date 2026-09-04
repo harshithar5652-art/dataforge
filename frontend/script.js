@@ -9,6 +9,7 @@ const sessionId =
         : "session-" + Date.now();
 
 let currentAudio = null;
+let isListening = false;
 
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -34,21 +35,25 @@ if (!SpeechRecognition) {
         status.textContent = "🎙️ Listening... Speak now!";
         voiceState.textContent = "🔴 Listening";
 button.textContent = "🔴 Listening...";
+isListening = true;
 
         recognition.start();
     });
 
     recognition.onspeechstart = () => {
 
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            currentAudio = null;
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
 
-            status.textContent =
-                "🛑 VoiceFlow interrupted. Listening...";
-        }
-    };
+        status.textContent =
+            "🛑 VoiceFlow interrupted. Listening...";
+
+        voiceState.textContent = "🔴 Listening";
+        button.textContent = "🔴 Listening...";
+    }
+};
 
     recognition.onresult = (event) => {
 
@@ -156,9 +161,10 @@ currentAudio.onended = () => {
     };
 
     recognition.onend = () => {
+    isListening = false;
 
-        console.log(
-            "Voice recognition ended."
-        );
-    };
+    console.log(
+        "Voice recognition ended."
+    );
+};
 }
