@@ -61,14 +61,22 @@ def home():
 
 class VoiceRequest(BaseModel):
     text: str
+    session_id:str
 
 
 
-conversation_history = []
+conversation_sessions = {}
 
 
-def generate_response(text):
-    conversation_history.append({
+
+    
+def generate_response(text, session_id):
+    if session_id not in conversation_sessions:
+        conversation_sessions[session_id] = []
+
+    history = conversation_sessions[session_id]
+
+    history.append({
         "user": text
     })
 
@@ -88,26 +96,24 @@ def generate_response(text):
 
     elif "library" in text_lower:
         previous_messages = " ".join(
-            item["user"] for item in conversation_history[:-1]
+            item["user"] for item in history[:-1]
         ).lower()
 
         if "college" in previous_messages:
             response = "The library is part of the college context you mentioned. I can help you with library-related information."
-
         else:
             response = "Sure, I can help with library-related information."
 
     else:
         response = f"I understood your request: {text}"
 
-    conversation_history[-1]["assistant"] = response
+    history[-1]["assistant"] = response
 
     return response
-
 @app.post("/voice")
 def process_voice(request: VoiceRequest):
     text = request.text
-    response = generate_response(text)
+    response = generate_response(text,request.session_id)
 
     audio = text_to_speech(response)
 

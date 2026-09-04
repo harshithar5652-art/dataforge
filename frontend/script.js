@@ -1,5 +1,7 @@
 const button = document.getElementById("startButton");
 const status = document.getElementById("status");
+const sessionId = crypto.randomUUID();
+let currentAudio= null;
 
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -14,9 +16,15 @@ if (!SpeechRecognition) {
     recognition.lang = "en-IN";
 
     button.addEventListener("click", () => {
-        status.textContent = "🎙️ Listening... Speak now!";
-        recognition.start();
-    });
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+
+    status.textContent = "🎙️ Listening... Speak now!";
+    recognition.start();
+});
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
@@ -29,8 +37,9 @@ if (!SpeechRecognition) {
         "Content-Type": "application/json"
     },
     body: JSON.stringify({
-        text: transcript
-    })
+    text: transcript,
+    session_id: sessionId
+})
 })
 .then(response => {
     if (!response.ok) {
@@ -41,18 +50,25 @@ if (!SpeechRecognition) {
 })
 .then(audioBlob => {
     const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
+    currentAudio = new Audio(audioUrl);
 
-    audio.play();
+currentAudio.play();
 
-    status.textContent = "🔊 VoiceFlow is speaking...";
+status.textContent = "🔊 VoiceFlow is speaking...";
 })
 .catch(error => {
     console.error(error);
     status.textContent = "Could not connect to the backend.";
 });
     };
-
+    recognition.onspeechstart = () => {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+        status.textContent = "🛑 VoiceFlow interrupted. Listening...";
+    }
+};
     recognition.onerror = (event) => {
         status.textContent = `Voice error: ${event.error}`;
     };
